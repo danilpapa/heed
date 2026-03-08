@@ -1,9 +1,12 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
+// TODO: Script
 public final class HeedInstrument {
     
     public static func invoke() {
-        UIButtonSwizzling.enable()
+        HeedInstruments.invoke {
+            UIButtonSwizzling.self
+        }
     }
 }
