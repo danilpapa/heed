@@ -15,7 +15,7 @@ final class SwizzledBuilder {
     }
 }
 
-public enum HeedInstruments {
+public enum Heed {
     
     public static func invoke(@SwizzledBuilder builder: () -> [IHeedSwizzling.Type]) {
         builder().forEach { $0.enable() }
