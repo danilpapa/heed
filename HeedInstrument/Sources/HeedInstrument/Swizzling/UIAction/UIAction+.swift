@@ -9,28 +9,20 @@ import UIKit
 
 private enum HeedUIActionContext {
     static let didLogUIActionKey = "heed.didLogUIAction"
-    static let minInterval: CFTimeInterval = 0.02
-    nonisolated(unsafe) static var lastLog: [ObjectIdentifier: CFTimeInterval] = [:]
-    static let lock = NSLock()
+    static let inTitleInitKey = "heed.inTitleInit"
 }
 
 extension UIAction {
 
     @objc(hs_instrumented_initWithHandler:)
     convenience init(hs_instrumented_handler handler: @escaping UIActionHandler) {
+        if Thread.current.threadDictionary[HeedUIActionContext.inTitleInitKey] as? Bool == true {
+            self.init(hs_instrumented_handler: handler)
+            return
+        }
+
         let wrapped: UIActionHandler = { action in
             if Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] as? Bool != true {
-                let key = ObjectIdentifier(action)
-                let now = CFAbsoluteTimeGetCurrent()
-                HeedUIActionContext.lock.lock()
-                if let last = HeedUIActionContext.lastLog[key], now - last < HeedUIActionContext.minInterval {
-                    HeedUIActionContext.lock.unlock()
-                    handler(action)
-                    return
-                }
-                HeedUIActionContext.lastLog[key] = now
-                HeedUIActionContext.lock.unlock()
-
                 Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] = true
                 defer {
                     Thread.current.threadDictionary.removeObject(forKey: HeedUIActionContext.didLogUIActionKey)
@@ -61,17 +53,6 @@ extension UIAction {
     ) {
         let wrapped: UIActionHandler = { action in
             if Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] as? Bool != true {
-                let key = ObjectIdentifier(action)
-                let now = CFAbsoluteTimeGetCurrent()
-                HeedUIActionContext.lock.lock()
-                if let last = HeedUIActionContext.lastLog[key], now - last < HeedUIActionContext.minInterval {
-                    HeedUIActionContext.lock.unlock()
-                    handler(action)
-                    return
-                }
-                HeedUIActionContext.lastLog[key] = now
-                HeedUIActionContext.lock.unlock()
-
                 Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] = true
                 defer {
                     Thread.current.threadDictionary.removeObject(forKey: HeedUIActionContext.didLogUIActionKey)
@@ -84,6 +65,11 @@ extension UIAction {
                 EventLogger.shared.log(eventLog)
             }
             handler(action)
+        }
+
+        Thread.current.threadDictionary[HeedUIActionContext.inTitleInitKey] = true
+        defer {
+            Thread.current.threadDictionary.removeObject(forKey: HeedUIActionContext.inTitleInitKey)
         }
 
         self.init(
