@@ -1,0 +1,99 @@
+//
+//  UIAction+.swift
+//  HeedInstrument
+//
+//  Created by setuper on 13.03.2026.
+//
+
+import UIKit
+
+private enum HeedUIActionContext {
+    static let didLogUIActionKey = "heed.didLogUIAction"
+    static let minInterval: CFTimeInterval = 0.02
+    nonisolated(unsafe) static var lastLog: [ObjectIdentifier: CFTimeInterval] = [:]
+    static let lock = NSLock()
+}
+
+extension UIAction {
+
+    @objc(hs_instrumented_initWithHandler:)
+    convenience init(hs_instrumented_handler handler: @escaping UIActionHandler) {
+        let wrapped: UIActionHandler = { action in
+            if Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] as? Bool != true {
+                let key = ObjectIdentifier(action)
+                let now = CFAbsoluteTimeGetCurrent()
+                HeedUIActionContext.lock.lock()
+                if let last = HeedUIActionContext.lastLog[key], now - last < HeedUIActionContext.minInterval {
+                    HeedUIActionContext.lock.unlock()
+                    handler(action)
+                    return
+                }
+                HeedUIActionContext.lastLog[key] = now
+                HeedUIActionContext.lock.unlock()
+
+                Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] = true
+                defer {
+                    Thread.current.threadDictionary.removeObject(forKey: HeedUIActionContext.didLogUIActionKey)
+                }
+
+                let id = action.identifier.rawValue ?? ""
+                let title = action.title
+                let eventLog = EventLog(
+                    debug_detail: "UIAction handler id=\(id) title=\(title)"
+                )
+                EventLogger.shared.log(eventLog)
+            }
+            handler(action)
+        }
+
+        self.init(hs_instrumented_handler: wrapped)
+    }
+
+    @objc(hs_instrumented_initWithTitle:image:identifier:discoverabilityTitle:attributes:state:handler:)
+    convenience init(
+        hs_instrumented_title title: String,
+        image: UIImage?,
+        identifier: UIAction.Identifier?,
+        discoverabilityTitle: String?,
+        attributes: UIMenuElement.Attributes,
+        state: UIMenuElement.State,
+        handler: @escaping UIActionHandler
+    ) {
+        let wrapped: UIActionHandler = { action in
+            if Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] as? Bool != true {
+                let key = ObjectIdentifier(action)
+                let now = CFAbsoluteTimeGetCurrent()
+                HeedUIActionContext.lock.lock()
+                if let last = HeedUIActionContext.lastLog[key], now - last < HeedUIActionContext.minInterval {
+                    HeedUIActionContext.lock.unlock()
+                    handler(action)
+                    return
+                }
+                HeedUIActionContext.lastLog[key] = now
+                HeedUIActionContext.lock.unlock()
+
+                Thread.current.threadDictionary[HeedUIActionContext.didLogUIActionKey] = true
+                defer {
+                    Thread.current.threadDictionary.removeObject(forKey: HeedUIActionContext.didLogUIActionKey)
+                }
+
+                let id = action.identifier.rawValue ?? ""
+                let eventLog = EventLog(
+                    debug_detail: "UIAction handler id=\(id) title=\(action.title)"
+                )
+                EventLogger.shared.log(eventLog)
+            }
+            handler(action)
+        }
+
+        self.init(
+            hs_instrumented_title: title,
+            image: image,
+            identifier: identifier,
+            discoverabilityTitle: discoverabilityTitle,
+            attributes: attributes,
+            state: state,
+            handler: wrapped
+        )
+    }
+}

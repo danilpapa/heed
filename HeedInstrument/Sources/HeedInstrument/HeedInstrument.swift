@@ -12,6 +12,7 @@ public final class HeedInstrument {
     public static func start() {
         Heed.invoke {
             UIButtonSwizzling.self
+            UIActionSwizzling.self
         }
     }
 }
