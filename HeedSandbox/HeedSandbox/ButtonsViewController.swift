@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  ButtonsViewController.swift
 //  HeedSandbox
 //
 //  Created by setuper on 07.03.2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ViewController: UIViewController {
+final class ButtonsViewController: UIViewController {
     
     private lazy var selectorButton: UIButton = {
         let button = UIButton()
