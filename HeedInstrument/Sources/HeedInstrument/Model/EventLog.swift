@@ -10,13 +10,22 @@ import Foundation
 public struct EventLog {
     
     public let timestamp: Date
-    public let debug_detail: String
+    public let category: String
+    public let eventType: String
+    public let duration: TimeInterval
+    public let detail: String
     
     public init(
         timestamp: Date = Date(),
-        debug_detail: String
+        category: String,
+        eventType: String,
+        duration: TimeInterval = 0,
+        detail: String
     ) {
         self.timestamp = timestamp
-        self.debug_detail = debug_detail
+        self.category = category
+        self.eventType = eventType
+        self.duration = duration
+        self.detail = detail
     }
 }

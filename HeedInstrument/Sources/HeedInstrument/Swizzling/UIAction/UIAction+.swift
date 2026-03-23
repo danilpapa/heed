@@ -31,7 +31,9 @@ extension UIAction {
                 let id = action.identifier.rawValue ?? ""
                 let title = action.title
                 let eventLog = EventLog(
-                    debug_detail: "UIAction handler id=\(id) title=\(title)"
+                    category: "UI",
+                    eventType: "action",
+                    detail: "UIAction handler id=\(id) title=\(title)"
                 )
                 EventLogger.shared.log(eventLog)
             }
@@ -60,7 +62,9 @@ extension UIAction {
                 
                 let id = action.identifier.rawValue ?? ""
                 let eventLog = EventLog(
-                    debug_detail: "UIAction handler id=\(id) title=\(action.title)"
+                    category: "UI",
+                    eventType: "action",
+                    detail: "UIAction handler id=\(id) title=\(action.title)"
                 )
                 EventLogger.shared.log(eventLog)
             }

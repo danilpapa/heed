@@ -1,19 +1,3 @@
-**1. Базовый UIControl (selector‑путь)**
-- Swizzle `UIControl.sendAction(_:to:for:)` и логируй тип контрола + action + target.
-- Это ловит `addTarget(_:action:for:)`.
-
-**2. UIAction (addAction‑путь)**
-- Swizzle `UIControl.addAction(_:for:)`.
-- После добавления action добавляй скрытый target‑action на те же `UIControl.Event`, чтобы логировать именно событие, а не handler.
-- Это даёт один лог на событие без костылей и без swizzle `UIAction` init.
-
-**3. UITextField**
-- Лови события `editingChanged`, `editingDidBegin`, `editingDidEnd`, `editingDidEndOnExit`.
-- Можно через тот же путь `UIControl.addTarget` или через Notification:
-  - `UITextField.textDidBeginEditingNotification`
-  - `UITextField.textDidEndEditingNotification`
-  - `UITextField.textDidChangeNotification`
-- Для удобства логируй `text.count`, а не сам текст, чтобы не утекали данные.
 
 **4. UITextView**
 - Лови `textDidBeginEditing`, `textDidEndEditing`, `textDidChange` через `NotificationCenter`.

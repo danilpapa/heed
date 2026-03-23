@@ -36,7 +36,9 @@ extension UIControl {
     
     @objc func hs_instrumented_logActionEvent(_ sender: UIControl) {
         let eventLog = EventLog(
-            debug_detail: "UIAction event control=\(type(of: sender))"
+            category: "UI",
+            eventType: "action",
+            detail: "UIAction control=\(type(of: sender))"
         )
         EventLogger.shared.log(eventLog)
     }
@@ -64,7 +66,9 @@ extension UIControl {
         let actionName = NSStringFromSelector(action)
         let targetName = target.map { String(describing: type(of: $0)) } ?? "nil"
         let eventLog = EventLog(
-            debug_detail: "UIControl action control=\(control) action=\(actionName) target=\(targetName)"
+            category: "UI",
+            eventType: "action",
+            detail: "UIControl control=\(control) action=\(actionName) target=\(targetName)"
         )
         
         EventLogger.shared.log(eventLog)

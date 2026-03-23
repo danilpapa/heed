@@ -37,7 +37,9 @@ extension UITextField {
     @objc func hs_instrumented_editingDidBegin(_ sender: UITextField) {
         let count = sender.text?.count ?? 0
         let eventLog = EventLog(
-            debug_detail: "UITextField editingDidBegin text.count=\(count)"
+            category: "UI",
+            eventType: "editingDidBegin",
+            detail: "UITextField text.count=\(count)"
         )
         EventLogger.shared.log(eventLog)
     }
@@ -45,7 +47,9 @@ extension UITextField {
     @objc func hs_instrumented_editingChanged(_ sender: UITextField) {
         let count = sender.text?.count ?? 0
         let eventLog = EventLog(
-            debug_detail: "UITextField editingChanged text.count=\(count)"
+            category: "UI",
+            eventType: "editingChanged",
+            detail: "UITextField text.count=\(count)"
         )
         EventLogger.shared.log(eventLog)
     }
@@ -53,7 +57,9 @@ extension UITextField {
     @objc func hs_instrumented_editingDidEnd(_ sender: UITextField) {
         let count = sender.text?.count ?? 0
         let eventLog = EventLog(
-            debug_detail: "UITextField editingDidEnd text.count=\(count)"
+            category: "UI",
+            eventType: "editingDidEnd",
+            detail: "UITextField text.count=\(count)"
         )
         EventLogger.shared.log(eventLog)
     }
@@ -61,7 +67,9 @@ extension UITextField {
     @objc func hs_instrumented_editingDidEndOnExit(_ sender: UITextField) {
         let count = sender.text?.count ?? 0
         let eventLog = EventLog(
-            debug_detail: "UITextField editingDidEndOnExit text.count=\(count)"
+            category: "UI",
+            eventType: "editingDidEndOnExit",
+            detail: "UITextField text.count=\(count)"
         )
         EventLogger.shared.log(eventLog)
     }
