@@ -19,8 +19,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
         
+        let buttonsVC = ViewController()
+        buttonsVC.tabBarItem = UITabBarItem(title: "Buttons", image: nil, selectedImage: nil)
+
+        let textFieldsVC = TextFieldsViewController()
+        textFieldsVC.tabBarItem = UITabBarItem(title: "Text Fields", image: nil, selectedImage: nil)
+
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = [
+            UINavigationController(rootViewController: buttonsVC),
+            UINavigationController(rootViewController: textFieldsVC)
+        ]
+
         window?.makeKeyAndVisible()
-        window?.rootViewController = ViewController()
+        window?.rootViewController = tabBarController
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -53,4 +65,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-
