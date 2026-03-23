@@ -13,15 +13,15 @@ private enum HeedUIControlActionContext {
 }
 
 extension UIControl {
-
+    
     @objc(hs_instrumented_addAction:forControlEvents:)
     func hs_instrumented_addAction(_ action: UIAction, for controlEvents: UIControl.Event) {
         hs_instrumented_addAction(action, for: controlEvents)
-
+        
         let existing = (objc_getAssociatedObject(self, HeedUIControlActionContext.loggedEventsKey) as? UInt) ?? 0
         let newEvents = controlEvents.rawValue & ~existing
         guard newEvents != 0 else { return }
-
+        
         let updated = existing | newEvents
         objc_setAssociatedObject(
             self,
@@ -29,11 +29,11 @@ extension UIControl {
             updated,
             .OBJC_ASSOCIATION_RETAIN_NONATOMIC
         )
-
+        
         let eventsToLog = UIControl.Event(rawValue: newEvents)
         addTarget(self, action: #selector(hs_instrumented_logActionEvent(_:)), for: eventsToLog)
     }
-
+    
     @objc func hs_instrumented_logActionEvent(_ sender: UIControl) {
         let eventLog = EventLog(
             debug_detail: "UIAction event control=\(type(of: sender))"
@@ -60,7 +60,12 @@ extension UIControl {
             return
         }
 
-        let eventLog = EventLog(debug_detail: String(describing: self))
+        let control = String(describing: type(of: self))
+        let actionName = NSStringFromSelector(action)
+        let targetName = target.map { String(describing: type(of: $0)) } ?? "nil"
+        let eventLog = EventLog(
+            debug_detail: "UIControl action control=\(control) action=\(actionName) target=\(targetName)"
+        )
         
         EventLogger.shared.log(eventLog)
         

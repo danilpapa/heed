@@ -13,6 +13,7 @@ public final class HeedInstrument {
         Heed.invoke {
             UIButtonSwizzling.self
             UIControlAddActionSwizzling.self
+            UITextFieldSwizzling.self
         }
     }
 }
