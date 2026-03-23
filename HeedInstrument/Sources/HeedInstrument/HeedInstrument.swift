@@ -15,6 +15,7 @@ public final class HeedInstrument {
             UIControlAddActionSwizzling.self
             UITextFieldSwizzling.self
             UIGestureRecognizerSwizzling.self
+            UITableViewSwizzling.self
         }
     }
 }
