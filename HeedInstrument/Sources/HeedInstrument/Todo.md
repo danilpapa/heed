@@ -1,10 +1,5 @@
-
 **4. UITextView**
 - Лови `textDidBeginEditing`, `textDidEndEditing`, `textDidChange` через `NotificationCenter`.
-
-**5. UIGestureRecognizer**
-- Swizzle `UIGestureRecognizer.init(target:action:)` и `addTarget(_:action:)`.
-- Логируй тип жеста и состояние (`began/ended/changed`).
 
 **6. UIBarButtonItem**
 - Swizzle `UIBarButtonItem.init(title:style:target:action:)` и `init(image:style:target:action:)`.
