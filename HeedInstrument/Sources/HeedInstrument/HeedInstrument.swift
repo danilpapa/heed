@@ -19,6 +19,7 @@ public final class HeedInstrument {
             UIViewControllerSwizzling.self
             UINavigationControllerSwizzling.self
             UIAlertControllerSwizzling.self
+            URLSessionSwizzling.self
         }
 
         KeyboardObserver.shared.start()

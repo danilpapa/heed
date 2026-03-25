@@ -20,7 +20,8 @@ final class DemoListViewController: UIViewController {
         DemoItem(title: "Text Fields") { TextFieldsViewController() },
         DemoItem(title: "Gestures") { GesturesViewController() },
         DemoItem(title: "Scroll") { ScrollViewViewController() },
-        DemoItem(title: "Navigation Stack") { NavigationStackViewController() }
+        DemoItem(title: "Navigation Stack") { NavigationStackViewController() },
+        DemoItem(title: "Network") { NetworkDemoViewController() }
     ]
 
     override func viewDidLoad() {
