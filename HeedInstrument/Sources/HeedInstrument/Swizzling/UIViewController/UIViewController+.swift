@@ -51,6 +51,17 @@ extension UIViewController {
     ) {
         let fromType = String(describing: type(of: self))
         let toType = String(describing: type(of: viewControllerToPresent))
+        if let alert = viewControllerToPresent as? UIAlertController {
+            let style = alert.preferredStyle == .alert ? "alert" : "actionSheet"
+            let title = alert.title ?? ""
+            let message = alert.message ?? ""
+            let eventLog = EventLog(
+                category: "UI",
+                eventType: "alertPresent",
+                detail: "UIAlertController style=\(style) title=\(title) message=\(message)"
+            )
+            EventLogger.shared.log(eventLog)
+        }
         let eventLog = EventLog(
             category: "Navigation",
             eventType: "present",

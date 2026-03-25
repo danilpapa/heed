@@ -34,6 +34,16 @@ final class ButtonsViewController: UIViewController {
         button.backgroundColor = .blue
         return button
     }()
+
+    private lazy var alertButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Show alert", for: .normal)
+        button.addTarget(self, action: #selector(showAlert), for: .touchUpInside)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .darkGray
+        return button
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,9 +64,24 @@ final class ButtonsViewController: UIViewController {
             actionButton.widthAnchor.constraint(equalToConstant: 100),
             actionButton.heightAnchor.constraint(equalToConstant: 50),
         ])
+
+        view.addSubview(alertButton)
+        NSLayoutConstraint.activate([
+            alertButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            alertButton.topAnchor.constraint(equalTo: actionButton.bottomAnchor, constant: 12),
+            alertButton.widthAnchor.constraint(equalToConstant: 120),
+            alertButton.heightAnchor.constraint(equalToConstant: 50),
+        ])
     }
     
     @objc func tap() {
         print("Tap")
+    }
+
+    @objc private func showAlert() {
+        let alert = UIAlertController(title: "Demo", message: "Alert test", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
 }
