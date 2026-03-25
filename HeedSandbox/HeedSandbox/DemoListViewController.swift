@@ -19,7 +19,8 @@ final class DemoListViewController: UIViewController {
         DemoItem(title: "Buttons") { ButtonsViewController() },
         DemoItem(title: "Text Fields") { TextFieldsViewController() },
         DemoItem(title: "Gestures") { GesturesViewController() },
-        DemoItem(title: "Scroll") { ScrollViewViewController() }
+        DemoItem(title: "Scroll") { ScrollViewViewController() },
+        DemoItem(title: "Navigation Stack") { NavigationStackViewController() }
     ]
 
     override func viewDidLoad() {

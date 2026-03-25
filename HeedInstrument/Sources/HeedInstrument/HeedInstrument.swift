@@ -16,6 +16,8 @@ public final class HeedInstrument {
             UITextFieldSwizzling.self
             UIGestureRecognizerSwizzling.self
             UITableViewSwizzling.self
+            UIViewControllerSwizzling.self
+            UINavigationControllerSwizzling.self
         }
 
         KeyboardObserver.shared.start()
