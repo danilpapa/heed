@@ -18,10 +18,13 @@ final class DemoListViewController: UIViewController {
     private let items: [DemoItem] = [
         DemoItem(title: "Buttons") { ButtonsViewController() },
         DemoItem(title: "Text Fields") { TextFieldsViewController() },
+        DemoItem(title: "Search & Text View") { AdvancedTextInputsViewController() },
         DemoItem(title: "Gestures") { GesturesViewController() },
         DemoItem(title: "Scroll") { ScrollViewViewController() },
+        DemoItem(title: "Collection View") { CollectionDemoViewController() },
         DemoItem(title: "Navigation Stack") { NavigationStackViewController() },
-        DemoItem(title: "Network") { NetworkDemoViewController() }
+        DemoItem(title: "Network") { NetworkDemoViewController() },
+        DemoItem(title: "Lifecycle & Errors") { LifecycleAndErrorsViewController() }
     ]
 
     override func viewDidLoad() {

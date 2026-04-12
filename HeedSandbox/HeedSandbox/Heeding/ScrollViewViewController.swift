@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ScrollViewViewController: UIViewController {
+final class ScrollViewViewController: UIViewController, UIScrollViewDelegate {
 
     private let scrollView = UIScrollView()
     private let contentStack = UIStackView()
@@ -18,6 +18,7 @@ final class ScrollViewViewController: UIViewController {
         view.backgroundColor = .white
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.delegate = self
         view.addSubview(scrollView)
 
         contentStack.translatesAutoresizingMaskIntoConstraints = false

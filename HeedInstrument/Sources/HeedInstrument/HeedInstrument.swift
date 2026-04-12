@@ -23,5 +23,34 @@ public final class HeedInstrument {
         }
 
         KeyboardObserver.shared.start()
+        AppLifecycleObserver.shared.start()
+    }
+    
+    public static func leaveBreadcrumb(_ message: String) {
+        EventLogger.shared.log(
+            EventLog(
+                category: "Reliability",
+                eventType: "breadcrumb",
+                detail: message
+            )
+        )
+    }
+    
+    public static func record(error: Error, metadata: [String: String] = [:]) {
+        let metadataText = metadata
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key)=\($0.value)" }
+            .joined(separator: " ")
+        let detail = metadataText.isEmpty
+            ? String(describing: error)
+            : "\(error) \(metadataText)"
+        
+        EventLogger.shared.log(
+            EventLog(
+                category: "Reliability",
+                eventType: "nonFatalError",
+                detail: detail
+            )
+        )
     }
 }
