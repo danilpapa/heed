@@ -9,7 +9,11 @@ import Foundation
 
 public final class HeedInstrument {
     
-    public static func start() {
+    public static func start(
+        exporter: HeedExporter = UDPExporter()
+    ) {
+        EventLogger.shared.setExporter(exporter)
+        
         Heed.invoke {
             UIButtonSwizzling.self
             UIControlAddActionSwizzling.self

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EventLog {
+public struct EventLog: Codable {
     
     public let timestamp: Date
     public let category: String
