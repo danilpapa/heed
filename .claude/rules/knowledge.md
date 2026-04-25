@@ -54,15 +54,51 @@ SDK запускается через:
 
 Это довольно минималистичный формат. В проекте пока нет сложной схемы с `sessionId`, `traceId`, privacy flags или typed attributes.
 
+`EventLog` реализует `Codable` — нужно для JSON-сериализации при отправке через `UDPExporter`.
+
 ### 4. Логгер
 
 Главный sink логов:
 
 - `HeedInstrument/Sources/HeedInstrument/Logger/EventLogger.swift`
 
-Сейчас события в основном идут в консоль через `print(...)`.
+События идут в консоль через `print(...)` и опционально в `HeedExporter`, если он подключён.
 
-Это значит, что проект пока ближе к dev/debug SDK, чем к production telemetry platform.
+### 5. Export layer
+
+Отдельный слой экспорта событий наружу:
+
+- `HeedInstrument/Sources/HeedInstrument/Export/HeedExporter.swift` — протокол `HeedExporter: Sendable` с методом `export(_ event: EventLog)`
+- `HeedInstrument/Sources/HeedInstrument/Export/UDPExporter.swift` — реализация, отправляет каждое событие как JSON-пакет по UDP на указанный `host:port`
+
+`UDPExporter` использует `NWConnection` из `Network` framework. Соединение открывается один раз при `init`, отправка — fire-and-forget через `.idempotent`.
+
+Подключается через:
+```swift
+HeedInstrument.start(exporter: UDPExporter(host: "127.0.0.1", port: 9876))
+```
+
+### 6. CLI инструмент (heed-cli)
+
+Отдельный Go-проект вне iOS репозитория (`~/heed-cli`).
+
+Слушает UDP-порт, принимает JSON-события от `UDPExporter`, pretty-print выводит в терминал.
+
+Запуск:
+```bash
+go run main.go --port 9876 --filter Network
+```
+
+Структура события в Go:
+```go
+type EventLog struct {
+    Timestamp time.Time
+    Category  string
+    EventType string
+    Duration  float64
+    Detail    string
+}
+```
 
 ---
 
@@ -227,9 +263,9 @@ SDK запускается через:
 ### Ограничения текущего подхода
 
 - Основа проекта — runtime swizzling, а это всегда чувствительная техника.
-- Логирование пока в основном уходит в консоль, а не в полноценный pipeline.
+- Логирование уходит в консоль и опционально во внешний `HeedExporter`.
 - Нет полноценной конфигурации SDK.
-- Нет выраженного разделения на capture layer, processing pipeline, storage layer и exporter layer.
+- Есть начальное разделение на capture layer и export layer, но нет processing pipeline, storage layer.
 - Мало или нет автоматических тестов.
 - В сетевом слое возможны privacy/security риски, если логируются body, query, response.
 - Некоторые реализации могут опираться на хрупкие runtime-детали UIKit/Foundation.
@@ -252,6 +288,11 @@ SDK запускается через:
 - `HeedInstrument/Sources/HeedInstrument/Helper/SwizzledBuilder.swift`
 - `HeedInstrument/Sources/HeedInstrument/Model/EventLog.swift`
 - `HeedInstrument/Sources/HeedInstrument/Logger/EventLogger.swift`
+
+### Export layer
+
+- `HeedInstrument/Sources/HeedInstrument/Export/HeedExporter.swift`
+- `HeedInstrument/Sources/HeedInstrument/Export/UDPExporter.swift`
 
 ### UI instrumentation
 
@@ -336,15 +377,18 @@ SDK запускается через:
 
 - добавить `HeedConfiguration`
 - ввести privacy/redaction rules
-- отделить capture от export
+- ~~отделить capture от export~~ — сделано: `HeedExporter` протокол + `UDPExporter`
 - добавить storage/batching/offline queue
-- сделать нормальный exporter вместо одного `print`
+- ~~сделать нормальный exporter вместо одного `print`~~ — сделано: `UDPExporter` + `heed-cli`
 - покрыть ключевые swizzling-сценарии тестами
 - ввести более строгую схему событий
 - добавить защиту от конфликтов swizzling и повторного enable
+- развивать `heed-cli`: фильтрация, форматы вывода, сохранение сессий в файл
 
 ---
 
 ## Краткий итог
 
 `HeedInstrument` — это SDK для автоматического перехвата событий iOS-приложения через swizzling. Основной фокус проекта — UI, navigation, keyboard, network и lifecycle instrumentation. `HeedSandbox` служит тестовым приложением для проверки этих сценариев. Архитектура уже достаточно понятная и расширяемая, а самые важные файлы сосредоточены вокруг `HeedInstrument.swift`, `EventLog.swift`, `EventLogger.swift` и папки `Swizzling`.
+
+Добавлен export layer: `HeedExporter` протокол и `UDPExporter`, который отправляет события в реальном времени по UDP как JSON. Отдельный Go CLI (`heed-cli`) принимает эти события и выводит их в терминале с возможностью фильтрации.
