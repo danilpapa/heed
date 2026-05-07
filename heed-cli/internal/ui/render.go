@@ -6,24 +6,28 @@ import (
 )
 
 type Renderer struct {
-	filter string
+	filters map[string]bool
 }
 
-func NewRenderer(filter string) *Renderer {
-	return &Renderer{filter: filter}
+func NewRenderer(filters []string) *Renderer {
+	filterMap := make(map[string]bool)
+	for _, f := range filters {
+		filterMap[f] = true
+	}
+	return &Renderer{filters: filterMap}
 }
 
 func (r *Renderer) ShouldRender(e *model.Event) bool {
-	if r.filter == "" {
+	if len(r.filters) == 0 {
 		return true
 	}
-	return e.Category == r.filter
+	return r.filters[e.Category]
 }
 
 func (r *Renderer) Render(e *model.Event) {
 	t := e.Timestamp.Format("15:04:05")
 	dur := fmt.Sprintf("%dms", int(e.Duration*1000))
-	
+
 	fmt.Printf("%s  %-12s  %-22s  %6s  %s\n",
 		t,
 		e.Category,

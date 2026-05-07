@@ -25,7 +25,6 @@ public final class HeedInstrument {
             UIAlertControllerSwizzling.self
             URLSessionSwizzling.self
         }
-
         KeyboardObserver.shared.start()
         AppLifecycleObserver.shared.start()
     }

@@ -10,14 +10,14 @@ type App struct {
 	renderer *ui.Renderer
 }
 
-func New(port, filter string) (*App, error) {
+func New(port string, filters []string) (*App, error) {
 	l, err := transport.NewUDPListener(port)
 	if err != nil {
 		return nil, err
 	}
-	
-	r := ui.NewRenderer(filter)
-	
+
+	r := ui.NewRenderer(filters)
+
 	return &App{
 		listener: l,
 		renderer: r,
@@ -30,11 +30,11 @@ func (a *App) Run() {
 		if err != nil {
 			continue
 		}
-		
+
 		if !a.renderer.ShouldRender(event) {
 			continue
 		}
-		
+
 		a.renderer.Render(event)
 	}
 }
