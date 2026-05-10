@@ -13,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/AlecAivazis/survey/v2"
 )
 
 type App struct {
@@ -45,13 +47,13 @@ func (a *App) Run() {
 	go a.listenForSignal()
 	go a.readEvents()
 
-	fmt.Println("📡 Listening for events... (press Ctrl+C to quit and save)")
+	fmt.Println("📡 Listening for events... (press Ctrl+C to quit)")
 
 	for {
 		select {
 		case <-a.exitCh:
-			fmt.Println("\n💾 Saving events...")
-			a.saveToJSON()
+			fmt.Println()
+			a.promptSaveEvents()
 			return
 		case event := <-a.eventsCh:
 			if !a.renderer.ShouldRender(event) {
@@ -81,6 +83,31 @@ func (a *App) readEvents() {
 			continue
 		}
 		a.eventsCh <- event
+	}
+}
+
+func (a *App) promptSaveEvents() {
+	a.mu.Lock()
+	eventCount := len(a.events)
+	a.mu.Unlock()
+
+	if eventCount == 0 {
+		fmt.Println("⚠️  No events to save")
+		return
+	}
+
+	save := false
+	prompt := &survey.Confirm{
+		Message: fmt.Sprintf("Save %d events to JSON?", eventCount),
+		Default: true,
+	}
+	err := survey.AskOne(prompt, &save)
+	if err != nil {
+		return
+	}
+
+	if save {
+		a.saveToJSON()
 	}
 }
 

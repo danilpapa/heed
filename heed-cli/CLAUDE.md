@@ -31,14 +31,16 @@ This is part of the broader Heed project, which provides automated event instrum
   - Filters start UNSELECTED
 
 #### 3. **internal/app/** - Main Application
-- **App struct** - Contains UDP listener, renderer, event storage, and exit channel
-- **Run()** - Infinite loop that:
-  - Reads events from UDP
-  - Stores all events in memory (thread-safe with mutex)
-  - Filters events based on selected categories
-  - Renders (prints) matching events
-- **listenForSignal()** - OS signal handler that detects Ctrl+C (SIGINT) and SIGTERM
-- **saveToJSON()** - Exports all stored events to timestamped JSON file on Desktop
+- **App struct** - Contains UDP listener, renderer, event storage, and exit channels
+- **Run()** - Main event loop with goroutines:
+  - `listenForSignal()` goroutine detects Ctrl+C (SIGINT/SIGTERM)
+  - `readEvents()` goroutine reads UDP packets non-blockingly
+  - Main select loop routes events and handles exit signal
+- **promptSaveEvents()** - Interactive yes/no prompt using survey/v2:
+  - Shows event count
+  - Default answer: YES
+  - Only saves if user confirms
+- **saveToJSON()** - Exports confirmed events to timestamped JSON on Desktop
 
 #### 4. **internal/ui/render.go** - Event Display
 - **Renderer struct** - Holds filter map for O(1) lookup
@@ -240,9 +242,15 @@ for {
 
 2. Implemented event storage and JSON export:
    - All events stored in memory (thread-safe with mutex)
-   - Press Ctrl+C to quit and automatically save to JSON
+   - Press Ctrl+C to quit and trigger save prompt
    - Exports to `~/Desktop/heed-events_YYYY-MM-DD_HH-MM-SS.json`
    - Uses OS signal handling (SIGINT/SIGTERM) for reliable exit
+
+3. Added optional save prompt:
+   - Uses survey/v2 Confirm component
+   - Shows event count in prompt
+   - Default: YES (can press Enter or Y)
+   - User can press N to discard without saving
 
 ## Command-Line Flags
 
@@ -270,12 +278,14 @@ for {
 
 2. Select filters and let it listen for events
 
-3. When done, press **`Ctrl+C`** to quit and save
+3. When done, press **`Ctrl+C`** to quit
 
-4. Events are automatically saved to:
+4. You'll be prompted:
    ```
-   ~/Desktop/heed-events_2026-05-10_16-30-45.json
+   Save 42 events to JSON? (Y/n)
    ```
+   - **Y** (default) → Saves to `~/Desktop/heed-events_YYYY-MM-DD_HH-MM-SS.json`
+   - **n** → Discards events and exits
 
 ### Exported JSON Format
 ```json
@@ -305,7 +315,8 @@ for {
 2. Start listener: `make run` (select filters)
 3. Run HeedSandbox iOS app with UDP export to localhost:9876
 4. Events should appear in terminal with pretty formatting
-5. Press **`Ctrl+C`** to quit and save all events to JSON file on Desktop
+5. Press **`Ctrl+C`** to trigger save prompt
+6. Answer **Y/n** to save or discard events
 
 ## Future Enhancements
 
