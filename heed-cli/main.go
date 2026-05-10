@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"heed-cli/internal/app"
 	"heed-cli/internal/selector"
 	"log"
