@@ -31,11 +31,14 @@ This is part of the broader Heed project, which provides automated event instrum
   - Filters start UNSELECTED
 
 #### 3. **internal/app/** - Main Application
-- **App struct** - Contains UDP listener and renderer
+- **App struct** - Contains UDP listener, renderer, event storage, and exit channel
 - **Run()** - Infinite loop that:
   - Reads events from UDP
+  - Stores all events in memory (thread-safe with mutex)
   - Filters events based on selected categories
   - Renders (prints) matching events
+- **listenForSignal()** - OS signal handler that detects Ctrl+C (SIGINT) and SIGTERM
+- **saveToJSON()** - Exports all stored events to timestamped JSON file on Desktop
 
 #### 4. **internal/ui/render.go** - Event Display
 - **Renderer struct** - Holds filter map for O(1) lookup
@@ -44,6 +47,12 @@ This is part of the broader Heed project, which provides automated event instrum
   ```
   HH:MM:SS  CATEGORY     EVENTTYPE              DURATION  DETAIL
   ```
+- **formatDetail()** - Intelligent error parsing:
+  - Detects NSError objects and extracts key information
+  - Maps error codes to human-readable messages (-1003=DNS failed, -1001=Timeout, etc.)
+  - Adds emoji indicators (❌ for errors)
+  - Truncates long details gracefully
+- **formatNetworkError()** - Parses iOS network errors and simplifies output
 
 #### 5. **internal/transport/udp.go** - UDP Listener
 - Creates UDP connection on specified port
@@ -214,12 +223,26 @@ for {
 
 ## Recent Implementation (May 2026)
 
+### Phase 1 - CLI Basics
 1. Created `Makefile` with targets for different run modes
 2. Implemented interactive TUI filter selector using survey/v2
 3. Updated filter handling from single filter to multiple filters
 4. Created `filters.txt` with hardcoded categories
 5. Enhanced `app.go` to accept slice of filters
 6. Updated `render.go` to use filter map instead of string comparison
+
+### Phase 2 - Error Formatting & Event Export
+1. Added smart error parsing in `render.go`:
+   - Extracts NSError codes and messages with regex
+   - Maps common error codes to human-readable descriptions
+   - Uses emoji indicators (❌) for easy error spotting
+   - Truncates long non-error logs gracefully
+
+2. Implemented event storage and JSON export:
+   - All events stored in memory (thread-safe with mutex)
+   - Press Ctrl+C to quit and automatically save to JSON
+   - Exports to `~/Desktop/heed-events_YYYY-MM-DD_HH-MM-SS.json`
+   - Uses OS signal handling (SIGINT/SIGTERM) for reliable exit
 
 ## Command-Line Flags
 
@@ -236,18 +259,58 @@ for {
 - **app.New()** - Returns error if UDP listener fails
 - All errors logged with `log.Fatal()` and exit the program
 
+## Event Export (JSON)
+
+### How to Save Events
+
+1. Start heed-cli normally:
+   ```bash
+   make run
+   ```
+
+2. Select filters and let it listen for events
+
+3. When done, press **`Ctrl+C`** to quit and save
+
+4. Events are automatically saved to:
+   ```
+   ~/Desktop/heed-events_2026-05-10_16-30-45.json
+   ```
+
+### Exported JSON Format
+```json
+[
+  {
+    "timestamp": "2026-05-10T16:30:45.123Z",
+    "category": "Network",
+    "event_type": "httpRequest",
+    "duration": 0.135,
+    "detail": "❌ DNS lookup failed: A server with the specified hostname could not be found."
+  },
+  {
+    "timestamp": "2026-05-10T16:30:50.456Z",
+    "category": "UI",
+    "event_type": "buttonTapped",
+    "duration": 0.05,
+    "detail": "LoginButton"
+  }
+]
+```
+
+**Note:** Error messages are already formatted and cleaned up (the scary NSURLErrorDomain stuff is parsed into readable text)
+
 ## Testing Locally
 
 1. Build heed-cli: `make build`
 2. Start listener: `make run` (select filters)
 3. Run HeedSandbox iOS app with UDP export to localhost:9876
-4. Events should appear in terminal
+4. Events should appear in terminal with pretty formatting
+5. Press **`Ctrl+C`** to quit and save all events to JSON file on Desktop
 
 ## Future Enhancements
 
 - Add filter persistence (save last selection)
 - Support for complex filter expressions (AND, OR, NOT)
-- Output formats: JSON, CSV, etc.
-- Event logging to file
-- Real-time statistics
-- Event search/replay functionality
+- Output formats: CSV, plain text, etc.
+- Real-time statistics and event counts
+- Event search/replay functionality from saved JSON
