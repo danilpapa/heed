@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"heed-cli/internal/ai"
 	"heed-cli/internal/model"
 	"heed-cli/internal/transport"
 	"heed-cli/internal/ui"
@@ -24,6 +25,7 @@ type App struct {
 	mu        sync.Mutex
 	exitCh    chan bool
 	eventsCh  chan *model.Event
+	aiService ai.AIService
 }
 
 func New(port string, filters []string) (*App, error) {
@@ -33,6 +35,7 @@ func New(port string, filters []string) (*App, error) {
 	}
 
 	r := ui.NewRenderer(filters)
+	aiService := ai.NewMockAIService()
 
 	return &App{
 		listener:  l,
@@ -40,12 +43,14 @@ func New(port string, filters []string) (*App, error) {
 		events:    make([]*model.Event, 0),
 		exitCh:    make(chan bool),
 		eventsCh:  make(chan *model.Event, 100),
+		aiService: aiService,
 	}, nil
 }
 
 func (a *App) Run() {
 	go a.listenForSignal()
 	go a.readEvents()
+	go a.analyzeEventsPeriodicly()
 
 	fmt.Println("📡 Listening for events... (press Ctrl+C to quit)")
 
@@ -83,6 +88,33 @@ func (a *App) readEvents() {
 			continue
 		}
 		a.eventsCh <- event
+	}
+}
+
+func (a *App) analyzeEventsPeriodicly() {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		a.mu.Lock()
+		if len(a.events) == 0 {
+			a.mu.Unlock()
+			continue
+		}
+
+		recentEvents := a.events
+		if len(recentEvents) > 100 {
+			recentEvents = recentEvents[len(recentEvents)-100:]
+		}
+		a.mu.Unlock()
+
+		analysis, err := a.aiService.AnalyzeEvents(recentEvents)
+		if err != nil {
+			log.Printf("❌ AI Analysis error: %v", err)
+			continue
+		}
+
+		fmt.Printf("\n🤖 AI Analysis:\n%s\n", analysis)
 	}
 }
 
